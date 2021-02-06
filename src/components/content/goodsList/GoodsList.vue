@@ -1,8 +1,8 @@
 <template>
 	<div class="goods-list">
-		<div class="goods-item" v-for="goods in goodsList">
+		<div class="goods-item" v-for="goods in goodsList" >
 			<a :href="goods.link">
-				<img :src="goods.img" alt="">
+				<img :src="goods.img" alt="" @load="imageLoad">
 				<div class="goods-info">
 					<p>{{goods.title}}</p>
 					<span class="price">￥:{{goods.price}}</span>
@@ -22,6 +22,12 @@
 				default(){
 					return []
 				}
+			}
+		},
+		methods: {
+			imageLoad(){
+				this.$bus.$emit('imageLoad')
+				
 			}
 		}
 	}
@@ -43,6 +49,7 @@
 	
 	.goods-item img {
 		width: 100%;
+		height: 80%;
 		border-radius: 10px;
 	
 		

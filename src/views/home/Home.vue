@@ -3,17 +3,37 @@
 		<nav-bar class="home-nav">
 			<div slot="center">购物街</div>
 		</nav-bar>
-		<swiper>
-			<swiper-item v-for="item in banner" :key="item.link" >
-				<a :href="item.link">
-					<img :src="item.image" alt="">
-				</a>
-			</swiper-item>
-		</swiper>
-		<recommend :list="recommend"/>
-		<reature-view />
-		<tab-control class="tab-contorl" :controls="controls" @changeControl="changeControl" />
-		<goods-list :goodsList="showGoods"></goods-list>
+
+		<tab-control class="tab-control" :controls="controls" ref="tabControl" 
+		@changeControl="changeControl" v-show="isTabFixed" />	
+
+		<scroll class="content" ref="scroll" 
+			:probe-type="3" :pull-up-load="true"
+			 @scroll="scrollPosition" @pullUpLoad="moreUpLoad">
+			
+			<swiper ref="swiper">
+				<swiper-item v-for="item in banner" :key="item.id" >
+					<a :href="item.link">
+						<img :src="item.image" alt="item.title" @load="imageLoad" >
+					</a>
+				</swiper-item>
+			</swiper>
+					
+			<recommend :list="recommend"/>
+			
+			<reature-view />
+					
+			<tab-control  :controls="controls" ref="tabControlH" @changeControl="changeControl" />
+
+			
+					
+			<goods-list :goodsList="showGoods"></goods-list>
+			
+			<p v-if="isBottom">已到底部....</p>
+			
+		</scroll>
+		<back-top @click.native="toTop" v-show="showBackTop"></back-top>
+		
 	</div>
 </template>
 
@@ -27,11 +47,13 @@
 	
 	import TabControl from 'components/content/tabControl/TabControl'
 	import GoodsList from 'components/content/goodsList/GoodsList'
+	import Scroll from 'components/common/scroll/Scroll'
 
+	import BackTop from 'components/content/backTop/BackTop'
 	
+	import {debounce} from 'common/utils'
 	export default {
 		name: 'Home',
-		
 		components: {
 			NavBar,
 			Swiper,
@@ -39,8 +61,9 @@
 			Recommend,
 			ReatureView,
 			TabControl,
-			GoodsList
-			
+			GoodsList,
+			Scroll,
+			BackTop,
 		},
 		data(){
 			return {
@@ -52,7 +75,12 @@
 					'sell': {page: 0, list: []},
 				},
 				controls: ['新品','热门','精选'],
-				goodsType: 'new'
+				goodsType: 'new',
+				showBackTop: false,
+				isBottom: false,
+				isLoad: false,
+				offsetTop: 0,
+				isTabFixed: false
 			}
 		},
 		created() {
@@ -62,28 +90,52 @@
 			this.getGoodsMultidata('sell')
 			
 		},
+		mounted(){
+			const refresh = debounce(this.$refs.scroll.refresh,100) 
+			this.$bus.$on('imageLoad',()=>{
+				refresh()
+			})
+		},
+		
 		methods: {
+			// 防抖函数
+			// debounce(func,delay){
+			// 	let timer = null
+			// 	return function(...args){
+			// 		if(timer) clearTimeout(timer)
+			// 		timer = setTimeout(func,()=>{
+			// 			func.apply(this,args)
+			// 		},delay)
+			// 	}
+			// },
+			imageLoad(){
+				
+				if(!this.isLoad){
+					this.offsetTop = this.$refs.tabControlH.$el.offsetTop
+					
+				}
+				this.isLoad = true
+				
+			},
+			
 			getHomeMultidata(){
 				homeMultidata().then(res => {
-					this.banner = res.data.banner.list
-					this.recommend = res.data.recommend.list
+					this.banner = res.data.banner
+					this.recommend = res.data.recommend
+					
 				})
 			},
 			getGoodsMultidata(type){
+				
 				let page = this.goods[type].page + 1
 				goodsMulidata(type, page).then(res => {
-					for(let i = 0 ;i < 30; i++ ){
-						let goods = {
-							title: type+'测试夏季热快来解放立刻大师傅但是咖啡机发顺丰打开感到十分卡拉士大夫广东佛山非官方的官方电话关机'+i,
-							link: '#',
-							img: 'https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3196228190,1320544842&fm=26&gp=0.jpg',
-							price: '192.00',
-							cfav: 5 + i
-						}
-						this.goods[type].list.push(goods)
-					}
-					// this.goods[type].list.push(...res.data.list)
+					
+					this.isBottom = res.data.isEnd
+					
+					this.goods[type].list.push(...res.data.list)
 					this.goods[type].page += 1
+					this.$refs.scroll.finishPullUp();
+				
 					
 				}).catch(err => {
 					console.log(err)
@@ -100,12 +152,28 @@
 					case 2:
 						this.goodsType = 'sell'
 						break
-					
 				}
+				this.$refs.tabControlH.currnetIndex = index
+				this.$refs.tabControl.currnetIndex = index
+			},
+			toTop(){
+				this.$refs.scroll.backTop(0,0,500)
+				
+			},
+			scrollPosition(position){
+				this.isTabFixed = -position.y > this.offsetTop
+				this.showBackTop = Math.abs(position.y) > 1000
+			},
+			moreUpLoad(){
+				
+				this.getGoodsMultidata(this.goodsType)
+				
 			}
+			
 		},
 		computed:{
 			showGoods(){
+				
 				return this.goods[this.goodsType].list
 			}
 		}
@@ -114,21 +182,28 @@
 
 <style scoped="scoped">
 	#home {
-		padding-top: 44px;
+		height: 100vh;
+		position: relative;
 	}
 	.home-nav{
 		background-color: var(--color-tint);
 		color: white;
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		z-index: 9;
 	}
-	.tab-contorl {
-		position: sticky;
+	.tab-control {
+		position: relative;
+		background-color: #F6F6F6;
+		z-index: 9;
+		
+		
+	}
+	
+	.content {
+		
+		/* height: calc(100% - 93px); */
+		position: absolute;
 		top: 44px;
-		z-index: 9;
-		background-color: #FFFFFF;
+		bottom: 49px;
+		overflow: hidden;
 	}
+	
 </style>

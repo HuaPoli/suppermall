@@ -1,8 +1,7 @@
 <template>
 	<div class="reature">
 		<a href="https://act.mogujie.com/zzlx67">
-			<p>本周推荐</p>
-			<img src="~assets/img/home/reatureview.jpg" alt="">
+			<img src="~assets/img/home/recommend_bg.jpg" alt="">
 		</a>
 	</div>
 </template>

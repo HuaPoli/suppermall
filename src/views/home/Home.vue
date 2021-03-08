@@ -9,13 +9,10 @@
 
 		<scroll class="content" ref="scroll" 
 			:probe-type="3" :pull-up-load="true"
-			 @scroll="scrollPosition" @pullUpLoad="moreUpLoad">
-			
+			 @scroll="scrollPosition" @pullingUp="moreUpLoad">
 			<swiper ref="swiper">
 				<swiper-item v-for="item in banner" :key="item.id" >
-					<a :href="item.link">
-						<img :src="item.image" alt="item.title" @load="imageLoad" >
-					</a>
+						<img :src="item.image" @load="imageLoad" >
 				</swiper-item>
 			</swiper>
 					
@@ -24,8 +21,6 @@
 			<reature-view />
 					
 			<tab-control  :controls="controls" ref="tabControlH" @changeControl="changeControl" />
-
-			
 					
 			<goods-list :goodsList="showGoods"></goods-list>
 			
@@ -51,7 +46,8 @@
 
 	import BackTop from 'components/content/backTop/BackTop'
 	
-	import {debounce} from 'common/utils'
+	import {imgListenerMixins} from 'common/mixin'
+	
 	export default {
 		name: 'Home',
 		components: {
@@ -80,7 +76,7 @@
 				isBottom: false,
 				isLoad: false,
 				offsetTop: 0,
-				isTabFixed: false
+				isTabFixed: false,
 			}
 		},
 		created() {
@@ -90,13 +86,14 @@
 			this.getGoodsMultidata('sell')
 			
 		},
-		mounted(){
-			const refresh = debounce(this.$refs.scroll.refresh,100) 
-			this.$bus.$on('imageLoad',()=>{
-				refresh()
-			})
-		},
+		mixins: [imgListenerMixins],
 		
+		mounted(){
+			console.log("mounted执行了");
+		},
+		destroyed() {
+			console.log('home销毁')
+		},
 		methods: {
 			// 防抖函数
 			// debounce(func,delay){
@@ -108,14 +105,12 @@
 			// 		},delay)
 			// 	}
 			// },
+
 			imageLoad(){
-				
 				if(!this.isLoad){
 					this.offsetTop = this.$refs.tabControlH.$el.offsetTop
-					
 				}
 				this.isLoad = true
-				
 			},
 			
 			getHomeMultidata(){
@@ -157,7 +152,7 @@
 				this.$refs.tabControl.currnetIndex = index
 			},
 			toTop(){
-				this.$refs.scroll.backTop(0,0,500)
+				this.$refs.scroll.scrollTo(0,0,500)
 				
 			},
 			scrollPosition(position){
@@ -165,7 +160,7 @@
 				this.showBackTop = Math.abs(position.y) > 1000
 			},
 			moreUpLoad(){
-				
+			
 				this.getGoodsMultidata(this.goodsType)
 				
 			}

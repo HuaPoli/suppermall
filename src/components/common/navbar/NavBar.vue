@@ -23,10 +23,13 @@
 
 <style scoped="scoped">
 	.nav-bar{
+		position: relative;
 		display: flex;
 		line-height: 44px;
 		box-shadow: 0px 1px 1px rgba(100,100,0.2);
 		text-align: center;
+		z-index: 9;
+		background-color: #fff;
 	}
 	.left,.right {
 		width: 60px;

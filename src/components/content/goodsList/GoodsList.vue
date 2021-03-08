@@ -1,14 +1,12 @@
 <template>
 	<div class="goods-list">
-		<div class="goods-item" v-for="goods in goodsList" >
-			<a :href="goods.link">
+		<div class="goods-item" v-for="goods in goodsList" :key="goods.id" @click="goodsItme(goods.id)" >
 				<img :src="goods.img" alt="" @load="imageLoad">
 				<div class="goods-info">
 					<p>{{goods.title}}</p>
 					<span class="price">￥:{{goods.price}}</span>
 					<span class="cfav">{{goods.cfav}}</span>
 				</div>
-			</a>
 		</div>	
 	</div>
 </template>
@@ -28,6 +26,9 @@
 			imageLoad(){
 				this.$bus.$emit('imageLoad')
 				
+			},
+			goodsItme(id){
+				this.$router.push({path: '/detail', query: {id: id}})
 			}
 		}
 	}
@@ -51,8 +52,6 @@
 		width: 100%;
 		height: 80%;
 		border-radius: 10px;
-	
-		
 	}
 	.goods-info {
 		font-size: 12px;

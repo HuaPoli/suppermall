@@ -8,12 +8,12 @@
 				  </tab-bar-item>
 				  <tab-bar-item path="/category" active-color='red'>
 				  	<img slot="item-icon" src="~assets/img/tabbar/category.svg">
-					<img slot="item-icon-active" src="~assets/img/tabbar/category-active.svg">
+					<img slot="item-icon-active" src="~assets/img/tabbar/cart-active.svg">
 				  	<div slot="item-text">分类</div>		  
 				  </tab-bar-item>
 				  <tab-bar-item path="/cart" active-color='red'>
 				  	<img slot="item-icon" src="~assets/img/tabbar/cart.svg">
-					<img slot="item-icon-active" src="~assets/img/tabbar/cart-active.svg">
+					<img slot="item-icon-active" src="~assets/img/tabbar/category-active.svg">
 				  	<div slot="item-text">购物车</div>		  
 				  </tab-bar-item>
 				 <tab-bar-item path="/profile" active-color='red'>

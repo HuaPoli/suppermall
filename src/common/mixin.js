@@ -15,7 +15,6 @@ export const imgListenerMixins = {
         const refresh = debounce(this.$refs.scroll.refresh,100) 
         this.imgLoadListener = ()=>{ refresh() }
         this.$bus.$on('imageLoad', this.imgLoadListener)
-        console.log('混入mounted执行了');
     },
     deactivated() {
         this.$bus.$off('imageLoad',this.imgLoadListener)

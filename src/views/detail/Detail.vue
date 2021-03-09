@@ -13,6 +13,7 @@
 			<div class="recommend">才您喜欢</div>
 			<goods-list :goodsList="goodsList" ref="recommend" class="goods-list" />
 		</scroll>
+		<purchase-bar :product="product" />
 	</div>
 </template>
 
@@ -21,6 +22,7 @@ import DetailNavBar from './comps/DetailNavBar'
 import DetailSwiper from './comps/DetailSwiper'
 import DetailInfo from './comps/DetailInfo'
 import ShopInfo from './comps/ShopInfo.vue'
+import PurchaseBar from './comps/PurchaseBar'
 import Scroll from '../../components/common/scroll/Scroll'
 
 import {getDetail,GoodsInfo} from 'network/detail'
@@ -30,6 +32,7 @@ import {debounce} from 'common/utils'
 import {imgListenerMixins} from 'common/mixin'
 import Comment from './comps/Comment.vue'
 import GoodsList from '../../components/content/goodsList/GoodsList.vue'
+
 
 
 export default {
@@ -43,7 +46,8 @@ export default {
 	DetailParam,
 	Comment,
 	GoodsList,
-	},
+	PurchaseBar,
+},
 	data(){
 	return {
 		gid: null,
@@ -55,40 +59,45 @@ export default {
 		goodsList:[],
 		slidersY: [],
 		sliderListener: null,
-		currentIndex: 0
+		currentIndex: 0,
+		product: {}
 	}
 	},
 	mixins: [imgListenerMixins],
 	created() {
-	console.log(this.topImage)
-	this.gid = this.$route.query.id 
-	getDetail(this.gid).then(res => {
-		this.topImage = res.data.topImages
-		const goods = res.data.goods
-		const shop = res.data.shop
-		this.params = res.data.params
-		this.comment = res.data.comment
-		this.goodsList = res.data.goodsList
-		console.log(this.comment);
-		const paramArr = [
-			goods.title,
-			goods.price,
-			goods.old_price,
-			goods.discount,
-			goods.sales_volume,
-			goods.collection,
-			shop.delivery,
-			shop.promise
-		]
-		this.goodsInfo = new GoodsInfo(...paramArr)
-		this.shop = shop
-		
-		this.$nextTick(()=>{
-			// 这里还是不行，计算的值没把图片包含在内
-			
-		})
-
-
+		this.gid = this.$route.query.id 
+		getDetail(this.gid).then(res => {
+			this.topImage = res.data.topImages
+			const goods = res.data.goods
+			const shop = res.data.shop
+			this.params = res.data.params
+			this.comment = res.data.comment
+			this.goodsList = res.data.goodsList
+			const paramArr = [
+				goods.title,
+				goods.price,
+				goods.old_price,
+				goods.discount,
+				goods.sales_volume,
+				goods.collection,
+				shop.delivery,
+				shop.promise
+			]
+			this.goodsInfo = new GoodsInfo(...paramArr)
+			this.shop = shop
+			const productTemp = {}
+			productTemp.id = goods.id
+			productTemp.title = goods.title
+			productTemp.price = goods.price
+			productTemp.old_price = goods.old_price
+			productTemp.desc = '数据库未填写'
+			productTemp.topImage =  this.topImage[0] ? this.topImage[0].image : ' '
+			this.product = productTemp
+			// 异步加载完成调用
+			this.$nextTick(()=>{
+				// 这里还是不行，计算的值没把图片包含在内
+				
+			})
 	})
 	},
 	mounted() {
@@ -111,11 +120,13 @@ export default {
 			this.$refs.scroll.scrollTo(0,-this.slidersY[index],500)
 		},
 		getSliderY() {
-		this.slidersY = []
-		this.slidersY.push(0)
-		this.slidersY.push(this.$refs.params.$el.offsetTop)
-		this.slidersY.push(this.$refs.comment.$el.offsetTop)
-		this.slidersY.push(this.$refs.recommend.$el.offsetTop)
+			this.slidersY = []
+			if(this.$refs.params){
+				this.slidersY.push(0)
+				this.slidersY.push(this.$refs.params.$el.offsetTop)
+				this.slidersY.push(this.$refs.comment.$el.offsetTop)
+				this.slidersY.push(this.$refs.recommend.$el.offsetTop)
+			}
 		},
 		scrollPosition(position) {
 				for(let i =0; i < this.slidersY.length; i++){
@@ -147,7 +158,7 @@ export default {
 	}
 	.content {
 		background-color: #fff ;
-		height: calc(100% - 44px);
+		height: calc(100% - 44px - 49px);
 	}
 	.recommend {
 		 height: 50px;

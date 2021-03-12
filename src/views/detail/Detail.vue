@@ -13,6 +13,7 @@
 			<div class="recommend">才您喜欢</div>
 			<goods-list :goodsList="goodsList" ref="recommend" class="goods-list" />
 		</scroll>
+		<back-top @click.native="toTop" v-show="showBackTop"></back-top>
 		<purchase-bar :product="product" />
 	</div>
 </template>
@@ -29,7 +30,7 @@ import {getDetail,GoodsInfo} from 'network/detail'
 import DetailParam from './comps/DetailParam.vue'
 
 import {debounce} from 'common/utils'
-import {imgListenerMixins} from 'common/mixin'
+import {imgListenerMixins,backToTop} from 'common/mixin'
 import Comment from './comps/Comment.vue'
 import GoodsList from '../../components/content/goodsList/GoodsList.vue'
 
@@ -63,7 +64,7 @@ export default {
 		product: {}
 	}
 	},
-	mixins: [imgListenerMixins],
+	mixins: [imgListenerMixins,backToTop],
 	created() {
 		this.gid = this.$route.query.id 
 		getDetail(this.gid).then(res => {
@@ -129,19 +130,21 @@ export default {
 			}
 		},
 		scrollPosition(position) {
-				for(let i =0; i < this.slidersY.length; i++){
-					var temp = i + 1;
-					if(temp === this.slidersY.length){
-						temp = this.slidersY.length - 1
-					}	
-					if(this.currentIndex != i && position.y <= -this.slidersY[i]  && position.y > -this.slidersY[temp] ){
-						this.currentIndex = i;
-						this.$refs.navBar.currentIndex = this.currentIndex
-					}else if(this.currentIndex !== temp && position.y <= -this.slidersY[temp] && temp == this.slidersY.length-1 ){
-						this.currentIndex = temp
-						this.$refs.navBar.currentIndex = this.currentIndex
-					}
+			for(let i =0; i < this.slidersY.length; i++){
+				var temp = i + 1;
+				if(temp === this.slidersY.length){
+					temp = this.slidersY.length - 1
+				}	
+				if(this.currentIndex != i && position.y <= -this.slidersY[i]  && position.y > -this.slidersY[temp] ){
+					this.currentIndex = i;
+					this.$refs.navBar.currentIndex = this.currentIndex
+				}else if(this.currentIndex !== temp && position.y <= -this.slidersY[temp] && temp == this.slidersY.length-1 ){
+					this.currentIndex = temp
+					this.$refs.navBar.currentIndex = this.currentIndex
 				}
+			}
+			this.isTabFixed = -position.y > this.offsetTop
+            this.showBackTop = Math.abs(position.y) > 900
 		}
 	}
 }

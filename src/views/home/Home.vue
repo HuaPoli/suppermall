@@ -44,9 +44,8 @@
 	import GoodsList from 'components/content/goodsList/GoodsList'
 	import Scroll from 'components/common/scroll/Scroll'
 
-	import BackTop from 'components/content/backTop/BackTop'
 	
-	import {imgListenerMixins} from 'common/mixin'
+	import {imgListenerMixins,backToTop} from 'common/mixin'
 	
 	export default {
 		name: 'Home',
@@ -59,7 +58,6 @@
 			TabControl,
 			GoodsList,
 			Scroll,
-			BackTop,
 		},
 		data(){
 			return {
@@ -72,11 +70,9 @@
 				},
 				controls: ['新品','热门','精选'],
 				goodsType: 'new',
-				showBackTop: false,
 				isBottom: false,
 				isLoad: false,
-				offsetTop: 0,
-				isTabFixed: false,
+			
 			}
 		},
 		created() {
@@ -86,7 +82,7 @@
 			this.getGoodsMultidata('sell')
 			
 		},
-		mixins: [imgListenerMixins],
+		mixins: [imgListenerMixins,backToTop],
 		
 		mounted(){
 			console.log("mounted执行了");
@@ -151,24 +147,14 @@
 				this.$refs.tabControlH.currnetIndex = index
 				this.$refs.tabControl.currnetIndex = index
 			},
-			toTop(){
-				this.$refs.scroll.scrollTo(0,0,500)
-				
-			},
-			scrollPosition(position){
-				this.isTabFixed = -position.y > this.offsetTop
-				this.showBackTop = Math.abs(position.y) > 1000
-			},
-			moreUpLoad(){
 			
+			moreUpLoad(){
 				this.getGoodsMultidata(this.goodsType)
-				
 			}
 			
 		},
 		computed:{
 			showGoods(){
-				
 				return this.goods[this.goodsType].list
 			}
 		}
